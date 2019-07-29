@@ -1,10 +1,10 @@
-<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<template>
     <nav>
         <v-app-bar text app>
             <v-app-bar-nav-icon class="grey--text" @click="drawer = !drawer"></v-app-bar-nav-icon>
             <v-toolbar-title class="text-uppercase grey--text">
-                <span class="font-weight-light">Todo</span>
-                <span>Ninja</span>
+                <span class="font-weight-light">Preil </span>
+                <span>crm</span>
             </v-toolbar-title>
 
             <v-spacer></v-spacer>
@@ -64,7 +64,7 @@
                 drawer: false,
                 links: [
                     {icon: 'dashboard', text: 'Dashboard', route: '/'},
-                    {icon: 'folder', text: 'My projects', route: '/projects'},
+                    {icon: 'folder', text: 'Materials', route: '/materials'},
                     {icon: 'person', text: 'Team', route: '/team'},
                 ],
                 snackbar: true
