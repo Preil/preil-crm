@@ -84,6 +84,7 @@
 </template>
 
 <script>
+    import db from '@/firebase/init'
     export default {
         name: 'MaterialsList',
         data: () => ({
@@ -104,10 +105,14 @@
             editedIndex: -1,
             editedItem: {
                 name: '',
+                group: '',
+                type: '',
                 description: ''
             },
             defaultItem: {
                 name: '',
+                group: '',
+                type: '',
                 description: ''
             },
         }),
@@ -130,6 +135,16 @@
 
         methods: {
             initialize() {
+                db.collection('materials').get()
+                    .then(snapshot => {
+                        snapshot.forEach(doc => {
+                            let material = doc.data()
+                            material.id = doc.id
+                            this.materials.push(material)
+                        })
+                    })
+            },
+            initialize2() {
                 this.materials = [
                     {
                         name: 'Polyester resin (construction)',
@@ -235,7 +250,17 @@
                 if (this.editedIndex > -1) {
                     Object.assign(this.materials[this.editedIndex], this.editedItem)
                 } else {
-                    this.materials.push(this.editedItem)
+                    console.log
+                    db.collection('materials').add({
+                        name: this.editedItem.name,
+                        group: this.editedItem.group,
+                        type: this.editedItem.type,
+                        description: this.editedItem.description,
+                    }).then(()=>{
+                        this.materials.push(this.editedItem)
+                    }).catch(err=>{
+                        console.log(err)
+                    })
                 }
                 this.close()
             },
