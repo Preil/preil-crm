@@ -85,7 +85,6 @@
 
 <script>
     import db from '@/firebase/init'
-
     export default {
         name: 'MaterialsList',
         data: () => ({
@@ -142,10 +141,90 @@
                             let material = doc.data()
                             material.id = doc.id
                             this.materials.push(material)
-                            console.log(this.materials)
                         })
                     })
-
+            },
+            initialize2() {
+                this.materials = [
+                    {
+                        name: 'Polyester resin (construction)',
+                        group: 'Resins',
+                        type: 'Ortho',
+                        description: 'Ordinary type polyester resin, normal viscosity'
+                    },
+                    {
+                        name: 'Polyester resin liquid (construction) ',
+                        group: 'Resins',
+                        type: 'Ortho & DCPD',
+                        description: 'Ordinary type polyester resin, low viscosity'
+                    },
+                    {
+                        name: 'Polyester resin for winding ',
+                        group: 'Resins',
+                        type: 'Tere',
+                        description: 'Tn polyester resin, low viscosity'
+                    },
+                    {
+                        name: 'Polyester resin DCPD',
+                        group: 'Resins',
+                        type: 'DCPD',
+                        description: 'High quality polyester resin'
+                    },
+                    {
+                        name: 'Chemical resistant resin',
+                        group: 'Resins',
+                        type: 'ISO',
+                        description: 'Polyester resin with medium chemical resistance'
+                    },
+                    {
+                        name: 'Vynilester resin',
+                        group: 'Resins',
+                        type: 'Vynil',
+                        description: 'High chemical resistance resin'
+                    },
+                    {
+                        name: 'GSM 300',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Chopped strength mat'
+                    },
+                    {
+                        name: 'GSM 450',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Chopped strength mat'
+                    },
+                    {
+                        name: 'GSM 600',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Chopped strength mat'
+                    },
+                    {
+                        name: 'WR 400',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Woven roving'
+                    },
+                    {
+                        name: 'WR 500',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Woven roving'
+                    },
+                    {
+                        name: 'WR 600',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Woven roving'
+                    },
+                    {
+                        name: 'WR 800',
+                        group: 'Glass',
+                        type: 'E-glass',
+                        description: 'Woven roving'
+                    },
+                ]
             },
 
             editItem(item) {
@@ -169,36 +248,21 @@
 
             save() {
                 if (this.editedIndex > -1) {
-                    db.collection('materials').doc(this.editedItem.id).update({
-                        name: this.editedItem.name,
-                        group: this.editedItem.group,
-                        type: this.editedItem.type,
-                        description: this.editedItem.description
-                    }).then(() => {
-                        console.log('*****************')
-                        console.log(this.editedItem)
-                        console.log(this.editedIndex)
-                        Object.assign(this.materials[this.editedIndex], this.editedItem)
-                        this.close()
-                    }).catch(err => {
-                        console.log(err)
-                    })
-
+                    Object.assign(this.materials[this.editedIndex], this.editedItem)
                 } else {
                     console.log
                     db.collection('materials').add({
                         name: this.editedItem.name,
                         group: this.editedItem.group,
                         type: this.editedItem.type,
-                        description: this.editedItem.description
-                    }).then(() => {
+                        description: this.editedItem.description,
+                    }).then(()=>{
                         this.materials.push(this.editedItem)
-                        this.close()
-                    }).catch(err => {
+                    }).catch(err=>{
                         console.log(err)
                     })
                 }
-
+                this.close()
             },
         },
     }
