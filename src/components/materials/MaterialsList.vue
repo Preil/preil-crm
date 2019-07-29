@@ -85,6 +85,7 @@
 
 <script>
     import db from '@/firebase/init'
+
     export default {
         name: 'MaterialsList',
         data: () => ({
@@ -235,7 +236,17 @@
 
             deleteItem(item) {
                 const index = this.materials.indexOf(item)
-                confirm('Are you sure you want to delete this item?') && this.materials.splice(index, 1)
+                const id = this.materials[index].id
+                confirm('Are you sure you want to delete this item?') &&
+                db.collection('materials').doc(id).delete()
+                    .then(() => {
+                        this.materials.splice(index, 1)
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    })
+
+
             },
 
             close() {
@@ -248,7 +259,15 @@
 
             save() {
                 if (this.editedIndex > -1) {
-                    Object.assign(this.materials[this.editedIndex], this.editedItem)
+                    db.collection('materials').doc(this.materials[this.editedIndex].id).update({
+                        name: this.editedItem.name,
+                        group: this.editedItem.group,
+                        type: this.editedItem.type,
+                        description: this.editedItem.description
+                    }).then(()=>{
+                        Object.assign(this.materials[this.editedIndex], this.editedItem)
+                        this.close()
+                    })
                 } else {
                     console.log
                     db.collection('materials').add({
@@ -256,13 +275,16 @@
                         group: this.editedItem.group,
                         type: this.editedItem.type,
                         description: this.editedItem.description,
-                    }).then(()=>{
+                    }).then((docRef) => {
+                        console.log(docRef.id)
+                        this.editedItem.id = docRef.id
                         this.materials.push(this.editedItem)
-                    }).catch(err=>{
+                        this.close()
+                    }).catch(err => {
                         console.log(err)
                     })
                 }
-                this.close()
+
             },
         },
     }
