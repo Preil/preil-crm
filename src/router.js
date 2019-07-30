@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Materials from './views/Materials.vue'
+import Products from './views/Products.vue'
+import Product from './views/Product.vue'
 
 Vue.use(Router)
 
@@ -19,7 +21,16 @@ export default new Router({
             name: 'Materials',
             component: Materials
         },
-
+        {
+            path: '/products',
+            name: 'Products',
+            component: Products
+        },
+        {
+            path: '/products/:product_slug',
+            name: 'Product',
+            component: Product
+        },
         {
             path: '/about',
             name: 'about',

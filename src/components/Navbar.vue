@@ -64,8 +64,8 @@
                 drawer: false,
                 links: [
                     {icon: 'dashboard', text: 'Dashboard', route: '/'},
+                    {icon: 'category', text: 'Products', route: '/products'},
                     {icon: 'folder', text: 'Materials', route: '/materials'},
-                    {icon: 'person', text: 'Team', route: '/team'},
                 ],
                 snackbar: true
             }
