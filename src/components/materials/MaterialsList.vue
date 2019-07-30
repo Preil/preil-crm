@@ -4,6 +4,7 @@
         <v-data-table
                 :headers="headers"
                 :items="materials"
+                :search="search"
                 sort-by="group"
                 class="elevation-1"
         >
@@ -15,6 +16,13 @@
                             inset
                             vertical
                     ></v-divider>
+                            <v-text-field
+                                    v-model="search"
+                                    append-icon="search"
+                                    label="Search"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
                     <v-spacer></v-spacer>
                     <v-dialog v-model="dialog" max-width="800px">
                         <template v-slot:activator="{ on }">
@@ -79,6 +87,7 @@
             </template>
         </v-data-table>
 
+
     </v-container>
 
 </template>
@@ -89,6 +98,7 @@
     export default {
         name: 'MaterialsList',
         data: () => ({
+            search: '',
             dialog: false,
             headers: [
                 {
@@ -182,7 +192,7 @@
                         group: this.editedItem.group,
                         type: this.editedItem.type,
                         description: this.editedItem.description
-                    }).then(()=>{
+                    }).then(() => {
                         Object.assign(this.materials[this.editedIndex], this.editedItem)
                         this.close()
                     })
