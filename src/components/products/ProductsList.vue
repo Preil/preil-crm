@@ -24,7 +24,6 @@
                             hide-details
                     ></v-text-field>
                     <v-spacer></v-spacer>
-                    <v-spacer></v-spacer>
                     <v-dialog v-model="dialog" max-width="800px">
                         <template v-slot:activator="{ on }">
                             <v-btn color="primary" dark class="mb-2" v-on="on">New Item</v-btn>
@@ -69,19 +68,30 @@
                 </v-toolbar>
             </template>
             <template v-slot:item.action="{ item }">
-                <v-icon
-                        small
-                        class="mr-2"
-                        @click="editItem(item)"
-                >
-                    edit
-                </v-icon>
-                <v-icon
-                        small
-                        @click="deleteItem(item)"
-                >
-                    delete
-                </v-icon>
+                <v-layout>
+                    <v-icon
+                            small
+                            class="mr-2"
+                            @click="editItem(item)"
+                    >
+                        edit
+                    </v-icon>
+                    <v-icon
+                            small
+                            class="mr-2"
+                            @click="deleteItem(item)"
+                    >
+                        delete
+                    </v-icon>
+                    <router-link :to="{ name: 'Product', params: { product_id: item.id } }">
+                        <v-icon
+                                small
+                                class="mr-2"
+                        >
+                            visibility
+                        </v-icon>
+                    </router-link>
+                </v-layout>
             </template>
             <template v-slot:no-data>
                 <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -155,6 +165,10 @@
                         })
                     })
             },
+            showAlert(a) {
+                if (event.target.classList.contains('btn__content')) return;
+                alert('Alert! \n' + a.name);
+            },
 
             editItem(item) {
                 this.editedIndex = this.products.indexOf(item)
@@ -192,7 +206,7 @@
                         group: this.editedItem.group,
                         type: this.editedItem.type,
                         description: this.editedItem.description
-                    }).then(()=>{
+                    }).then(() => {
                         Object.assign(this.products[this.editedIndex], this.editedItem)
                         this.close()
                     })
