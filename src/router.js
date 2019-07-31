@@ -4,6 +4,8 @@ import Home from './views/Home.vue'
 import Materials from './views/Materials.vue'
 import Products from './views/Products.vue'
 import Product from './views/Product.vue'
+import Specs from './views/Specs.vue'
+import Spec from './views/Spec.vue'
 import Test from './views/Test.vue'
 
 Vue.use(Router)
@@ -31,6 +33,16 @@ export default new Router({
             path: '/products/:product_id',
             name: 'Product',
             component: Product
+        },
+        {
+            path: '/specs',
+            name: 'Specs',
+            component: Specs
+        },
+        {
+            path: '/specs/:spec_id',
+            name: 'Spec',
+            component: Spec
         },
         {
             path: '/test',

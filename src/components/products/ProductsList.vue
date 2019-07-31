@@ -106,7 +106,7 @@
     import db from '@/firebase/init'
 
     export default {
-        name: 'ProductList',
+        name: 'ProductsList',
         data: () => ({
             search: '',
             dialog: false,
