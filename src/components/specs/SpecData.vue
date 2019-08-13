@@ -46,7 +46,7 @@
                             <tbody>
                             <tr v-for="item in spec.materials" :key="item.material.name">
                                 <td>{{ item.material.name }}</td>
-                                <td>{{ item.quantity }}</td>
+                                <td class="text-right">{{ item.quantity }}</td>
                                 <td>{{ item.material.units }}</td>
                                 <td>
                                     <v-layout>
@@ -98,11 +98,11 @@
                                                     <v-autocomplete
                                                             ref="unUsedMaterials"
                                                             v-model="editedItem.material"
-                                                            :rules="[() => !!editedItem.material || 'This field is required']"
+                                                            :rules="[() => !!editedItem.material|| 'This field is required']"
                                                             :items="unUsedMaterials"
                                                             item-text="name"
                                                             label="Material"
-                                                            placeholder="Select..."
+                                                            :placeholder="editedItem.material.name"
                                                             return-object
                                                             required
                                                     ></v-autocomplete>
@@ -198,49 +198,62 @@
                     quantity: ''
 
                 },
-                unUsedMaterials: []
+                unUsedMaterials: [],
+                allMaterials: [],
+                usedMaterials: []
 
             }
         },
         methods: {
             initialize(spec_id) {
+                let usedMaterials = []
                 db.collection('test_specs').doc(spec_id).get()
                     .then(doc => {
-                        this.spec = doc.data()
-                        this.spec.id = doc.id
-                        console.log(this.spec)
-                        console.log(this.spec.materials)
-                        db.collection('materials').get()
-                            .then(snapshot => {
-                                snapshot.forEach(doc => {
-                                    let material = {}
-                                    material.id = doc.id
-                                    material.name = doc.data().name
-                                    material.units = doc.data().units
-                                    this.unUsedMaterials.push(material)
-                                })
-                                console.log(this.unUsedMaterials)
-                            }).catch(err => {
-                            console.log(err)
-                        })
-                    })
+                            this.spec = doc.data()
+                            this.spec.id = doc.id
+                            this.spec.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
+                            this.spec.materials.forEach(el => {
+                                let usedMaterial = {}
+                                usedMaterial.id = el.material.id
+                                usedMaterial.name = el.material.name
+                                usedMaterial.units = el.material.units
+                                usedMaterials.push(usedMaterial)
+                            })
+
+                            this.usedMaterials = usedMaterials
+                            let allMaterials = []
+                            db.collection('materials').get()
+                                .then(snapshot => {
+                                    snapshot.forEach(doc => {
+                                        let material = {}
+                                        material.id = doc.id
+                                        material.name = doc.data().name
+                                        material.units = doc.data().units
+                                        if (!usedMaterials.filter(el => {
+                                            return el.id === material.id
+                                        }).length > 0) {
+                                            this.unUsedMaterials.push(material)
+                                        }
+                                        allMaterials.push(material)
+                                    })
+                                    this.allMaterials = allMaterials
+                                    this.unUsedMaterials.sort((a, b) => a.name.localeCompare(b.name))
+                                }).catch(err => {
+                                console.log(err)
+                            })
+                        }
+                    )
                     .catch(err => {
                         console.log(err)
                     })
             },
             editItem(item) {
-                console.log('item:')
-                console.log(item)
                 this.editedIndex = this.spec.materials.indexOf(item)
-                console.log(this.editedIndex)
                 this.editedItem = Object.assign({}, item)
-
-                // this.editedItem.material = this.spec.materials.filter(material => {
-                //     return material.name == item.material.name
-                // })
                 this.dialog = true
-                console.log(this.editedItem)
-            },
+
+            }
+            ,
             deleteItem(item) {
                 const index = this.spec.materials.indexOf(item)
                 let newMaterials = this.spec.materials.concat()
@@ -251,22 +264,23 @@
                 })
                     .then(() => {
                         this.spec.materials = newMaterials
+                        this.updateMaterialsUsage()
                     })
                     .catch(err => {
                         console.log(err)
                     })
 
-
-            },
+            }
+            ,
             close() {
                 this.dialog = false
                 setTimeout(() => {
                     this.editedItem = Object.assign({}, this.defaultItem)
                     this.editedIndex = -1
                 }, 300)
-            },
+            }
+            ,
             save() {
-                console.log(this.editedItem)
                 if (this.editedIndex > -1) {
                     let newMaterials = this.spec.materials.concat()
                     newMaterials[this.editedIndex] = this.editedItem
@@ -274,22 +288,46 @@
                         materials: newMaterials
                     }).then(() => {
                         Object.assign(this.spec.materials[this.editedIndex], this.editedItem)
+                        this.spec.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
+                        this.updateMaterialsUsage()
                         this.close()
                     })
                 } else {
-                    console.log(this.editedItem)
                     let newMaterials = this.spec.materials.concat()
                     newMaterials.push(this.editedItem)
                     db.collection('test_specs').doc(this.spec.id).update({
                         materials: newMaterials
                     }).then(() => {
                         this.spec.materials.push(this.editedItem)
+                        this.spec.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
+                        this.updateMaterialsUsage()
                         this.close()
                     }).catch(err => {
                         console.log(err)
                     })
                 }
 
+            },
+            updateMaterialsUsage() {
+                this.unUsedMaterials.length = 0
+                this.usedMaterials.length = 0
+                this.spec.materials.forEach(doc => {
+                    let material = {}
+                    material.id = doc.material.id
+                    material.name = doc.material.name
+                    material.units = doc.material.units
+                    this.usedMaterials.push(material)
+                })
+                this.allMaterials.forEach(doc=>{
+                    if (!this.usedMaterials.filter(el => {
+                        return el.id === doc.id
+                    }).length > 0) {
+                        this.unUsedMaterials.push(doc)
+                    }
+                })
+
+
+                this.unUsedMaterials.sort((a, b) => a.name.localeCompare(b.name))
             }
         },
         created() {
