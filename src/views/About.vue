@@ -1,5 +1,15 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  <CalculateProduct />
 </template>
+
+<script>
+  import CalculateProduct from '@/components/products/CalculateProduct'
+  export default {
+      data () {
+          return { }
+      },
+      components: {
+          CalculateProduct
+      }
+  }
+</script>
