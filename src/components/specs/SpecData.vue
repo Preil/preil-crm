@@ -1,33 +1,187 @@
 <template>
+    <!--todo: Change this component to view specification, not edit-->
     <v-container>
-        <v-layout row class="mb-5">
-            <v-flex>
+        <v-row row class="mb-5">
+            <v-col>
                 <v-card>
                     <v-card-title class="light-green white--text">
                         <h2> {{ spec.name }}</h2>
                     </v-card-title>
+                    <v-card-text class="mt-3 pb-0 mb-0">
+                        <span class="headline text--primary">{{spec.product.name}}</span>
+                        <span class="title float-right">Status: {{ spec.status }}</span>
+                        <p class="mt-2 mb-0">{{spec.description}}</p>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-dialog v-model="dialog2" max-width="600px">
+                            <template v-slot:activator="{ on }">
+                                <!--<v-btn color="primary" dark v-on="on">Open Dialog</v-btn>-->
+                                <span class="float-right pointer"
+                                      style="cursor: pointer"
+                                      v-on="on">
+                            <v-icon>edit</v-icon>
+                        </span>
+                            </template>
+                            <v-card>
+                                <v-card-title>
+                                    <span class="headline">Edit specification</span>
+                                </v-card-title>
+                                <v-card-text>
+                                    <v-container>
+                                        <v-row>
+                                            <v-col cols="12" sm="12" md="12">
+                                                <v-text-field
+                                                        v-model="spec.name"
+                                                        label="Specification name*" required></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" sm="12" md="12">
+                                                <v-textarea
+                                                        v-model="spec.description"
+                                                        label="Description"
+                                                        hint="type some description here"></v-textarea>
+
+                                            </v-col>
+
+                                            <v-col cols="12" sm="12">
+                                                <v-select
+                                                        v-model="spec.status"
+                                                        :items="['default', '-']"
+                                                        label="Status"
+                                                        required
+                                                ></v-select>
+                                            </v-col>
+                                        </v-row>
+                                    </v-container>
+                                    <small>*indicates required field</small>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="blue darken-1" text @click="dialog2 = false">Close</v-btn>
+                                    <v-btn color="blue darken-1" text @click="dialog2 = false">Save</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+                    </v-card-actions>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <!--Material list-->
+
+        <v-row>
+            <v-col cols="12" sm="12" md="8">
+                <v-card class="mb-5">
+                    <v-card-title class="grey lighten-1">
+                        <span>Consist of</span>
+                    </v-card-title>
                     <v-card-text>
-                        <p>for product: {{spec.product.name}}</p>
-                        <span>{{spec.description}}</span>
-                        <span></span>
+                        <v-simple-table dense>
+                            <thead>
+                            <tr>
+                                <th class="text-left">Name</th>
+                                <th class="text-left">Specification</th>
+                                <th class="text-left">Quantity</th>
+                                <th>Units</th>
+                                <th class="text-left"></th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="item in spec.products" :key="item.product.name">
+                                <td>{{ item.product.name }}</td>
+                                <td class="text-right">{{ item.spec.name }}</td>
+                                <td class="text-right">{{ item.quantity }}</td>
+                                <td>{{ item.product.units }}</td>
+                                <td>
+                                    <v-layout>
+                                        <v-icon
+                                                small
+                                                class="mr-2"
+                                                @click="editItem(item)"
+                                        >
+                                            edit
+                                        </v-icon>
+                                        <v-icon
+                                                small
+                                                class="mr-2"
+                                                @click="deleteItem(item)"
+                                        >
+                                            delete
+                                        </v-icon>
+                                    </v-layout>
+                                </td>
+
+                            </tr>
+                            </tbody>
+                        </v-simple-table>
                     </v-card-text>
                     <v-card-actions>
                         <v-layout>
                             <v-flex>
-                                <span class="float-right">
-                                    <v-icon>edit</v-icon>
-                                </span>
+                                <v-dialog v-model="dialogEditProducts" max-width="800px">
+                                    <template v-slot:activator="{ on }">
+                                        <span class="float-right pointer"
+                                              style="cursor: pointer"
+                                              v-on="on">
+                                            <v-icon>add</v-icon>
+                                        </span>
+
+                                    </template>
+                                    <v-card>
+                                        <v-card-title>
+                                            <span class="headline">Add | Edit materials</span>
+                                        </v-card-title>
+
+                                        <v-card-text>
+
+                                            <v-layout wrap>
+                                                <v-flex xs12 sm12 md12>
+                                                    <!--<v-text-field v-model="editedItem.name"-->
+                                                    <!--label="Material name"></v-text-field>-->
+                                                    <v-autocomplete
+                                                            ref="unUsedMaterials"
+                                                            v-model="editedItem.material"
+                                                            :rules="[() => !!editedItem.material|| 'This field is required']"
+                                                            :items="unUsedMaterials"
+                                                            item-text="name"
+                                                            label="Material"
+                                                            :placeholder="editedItem.material.name"
+                                                            return-object
+                                                            required
+                                                    ></v-autocomplete>
+                                                </v-flex>
+
+
+                                                <v-flex xs12 sm6 md6>
+                                                    <v-text-field v-model="editedItem.quantity"
+                                                                  label="Quantity"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs12 sm6 md6>
+                                                    <span>{{editedItem.material.units}}</span>
+                                                </v-flex>
+
+                                            </v-layout>
+
+                                        </v-card-text>
+
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+                                            <v-btn color="blue darken-1" text @click="save">Save</v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+
                             </v-flex>
                         </v-layout>
+
                     </v-card-actions>
                 </v-card>
-            </v-flex>
-        </v-layout>
-
-        <!--Material list-->
-
-        <v-layout row>
-            <v-flex class="lg6 xl6 md6">
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
                 <v-card class="mb-5">
                     <v-card-title class="grey lighten-1">
                         <span>Materials</span>
@@ -76,7 +230,6 @@
                             <v-flex>
                                 <v-dialog v-model="dialog" max-width="800px">
                                     <template v-slot:activator="{ on }">
-                                        <!--<v-btn color="primary" dark class="mb-2" v-on="on">New Item</v-btn>-->
                                         <span class="float-right pointer"
                                               style="cursor: pointer"
                                               v-on="on">
@@ -86,7 +239,7 @@
                                     </template>
                                     <v-card>
                                         <v-card-title>
-                                            <span class="headline">Edit materials</span>
+                                            <span class="headline">Add | Edit materials</span>
                                         </v-card-title>
 
                                         <v-card-text>
@@ -134,8 +287,11 @@
 
                     </v-card-actions>
                 </v-card>
+            </v-col>
+        </v-row>
 
-
+        <v-row>
+            <v-col>
                 <v-card>
                     <v-card-title>
                         <h3>ToDo:</h3>
@@ -143,17 +299,17 @@
                     <v-card-text>
                         <ul>
                             <li>Edit spec data</li>
-                            <li>Add/Remove material + quantity</li>
+                            <li>Add/Remove consisted products</li>
+                            <li>Create bill of materials</li>
+                            <ul>
+                                <li>Create reports section</li>
+                            </ul>
                         </ul>
                     </v-card-text>
                 </v-card>
-            </v-flex>
-        </v-layout>
-        <v-layout row>
-            <v-flex>
+            </v-col>
+        </v-row>
 
-            </v-flex>
-        </v-layout>
 
     </v-container>
 </template>
@@ -168,6 +324,8 @@
         data() {
             return {
                 dialog: false,
+                dialog2: false,
+                dialogEditProducts: false,
                 spec: {
                     name: '',
                     product: {
@@ -176,6 +334,18 @@
                     },
                     status: '',
                     description: '',
+                    products: [
+                        {
+                            product: {id: 'flange100', name: 'Flange 100', units: 'psc.'},
+                            spec: {id: 'flange100', name:'Spec Flange 100'},
+                            quantity: 24
+                        },
+                        {
+                            product: {id: 'flange150', name: 'Flange 150', units: 'psc.'},
+                            spec: {id: 'flange150', name:'Spec Flange 150'},
+                            quantity: 2
+                        }
+                    ],
                     materials: []
 
                 },
@@ -219,6 +389,7 @@
                                 usedMaterial.units = el.material.units
                                 usedMaterials.push(usedMaterial)
                             })
+                        console.log(this.spec)
 
                             this.usedMaterials = usedMaterials
                             let allMaterials = []
@@ -318,7 +489,7 @@
                     material.units = doc.material.units
                     this.usedMaterials.push(material)
                 })
-                this.allMaterials.forEach(doc=>{
+                this.allMaterials.forEach(doc => {
                     if (!this.usedMaterials.filter(el => {
                         return el.id === doc.id
                     }).length > 0) {

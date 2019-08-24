@@ -1,15 +1,15 @@
 <template>
-  <CalculateProduct />
+  <specClassTest />
 </template>
 
 <script>
-  import CalculateProduct from '@/components/products/CalculateProduct'
+  import specClassTest from '@/components/specs/specClassTest'
   export default {
       data () {
           return { }
       },
       components: {
-          CalculateProduct
+          specClassTest
       }
   }
 </script>

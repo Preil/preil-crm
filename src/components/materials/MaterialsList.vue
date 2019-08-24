@@ -16,13 +16,13 @@
                             inset
                             vertical
                     ></v-divider>
-                            <v-text-field
-                                    v-model="search"
-                                    append-icon="search"
-                                    label="Search"
-                                    single-line
-                                    hide-details
-                            ></v-text-field>
+                    <v-text-field
+                            v-model="search"
+                            append-icon="search"
+                            label="Search"
+                            single-line
+                            hide-details
+                    ></v-text-field>
                     <v-spacer></v-spacer>
                     <v-dialog v-model="dialog" max-width="800px">
                         <template v-slot:activator="{ on }">
@@ -48,6 +48,9 @@
                                         <v-flex xs12 sm6 md6>
                                             <v-text-field v-model="editedItem.type" label="Type"></v-text-field>
                                         </v-flex>
+                                        <v-flex xs12 sm6 md6>
+                                            <v-text-field v-model="editedItem.units" label="Units"></v-text-field>
+                                        </v-flex>
                                         <v-flex xs12 sm12 md12>
                                             <v-text-field v-model="editedItem.description"
                                                           label="Description"></v-text-field>
@@ -61,26 +64,57 @@
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-                                <v-btn color="blue darken-1" text @click="save">Save</v-btn>
+                                <v-btn color="blue darken-1" text @click="save" @keydown.enter="save">Save</v-btn>
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
                 </v-toolbar>
             </template>
             <template v-slot:item.action="{ item }">
-                <v-icon
-                        small
-                        class="mr-2"
-                        @click="editItem(item)"
-                >
-                    edit
-                </v-icon>
-                <v-icon
-                        small
-                        @click="deleteItem(item)"
-                >
-                    delete
-                </v-icon>
+                <v-layout>
+                    <v-flex>
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on }">
+                                <v-icon
+                                        small
+                                        class="mr-2"
+                                        @click="copyItem(item)"
+                                        v-on="on">
+                                    mdi-content-copy
+                                </v-icon>
+                            </template>
+                            <span>copy</span>
+                        </v-tooltip>
+                    </v-flex>
+                    <v-flex>
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on }">
+                                <v-icon
+                                        small
+                                        class="mr-2"
+                                        @click="editItem(item)"
+                                        v-on="on">
+                                    edit
+                                </v-icon>
+                            </template>
+                            <span>edit</span>
+                        </v-tooltip>
+                    </v-flex>
+                    <v-flex>
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on }">
+                                <v-icon
+                                        small
+                                        class="mr-2"
+                                        @click="deleteItem(item)"
+                                        v-on="on">
+                                    delete
+                                </v-icon>
+                            </template>
+                            <span>delete</span>
+                        </v-tooltip>
+                    </v-flex>
+                </v-layout>
             </template>
             <template v-slot:no-data>
                 <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -94,6 +128,7 @@
 
 <script>
     import db from '@/firebase/init'
+    import MaterialRepository from '@/components/JS/repository/materialRepository'
 
     export default {
         name: 'MaterialsList',
@@ -109,6 +144,7 @@
                 },
                 {text: 'Group', value: 'group'},
                 {text: 'Type', value: 'type'},
+                {text: 'Units', value: 'units'},
                 {text: 'Description', value: 'description'},
                 {text: 'Actions', value: 'action', sortable: false, width: "1%"},
             ],
@@ -118,12 +154,14 @@
                 name: '',
                 group: '',
                 type: '',
+                units: '',
                 description: ''
             },
             defaultItem: {
                 name: '',
                 group: '',
                 type: '',
+                units: '',
                 description: ''
             },
         }),
@@ -146,14 +184,8 @@
 
         methods: {
             initialize() {
-                db.collection('materials').get()
-                    .then(snapshot => {
-                        snapshot.forEach(doc => {
-                            let material = doc.data()
-                            material.id = doc.id
-                            this.materials.push(material)
-                        })
-                    })
+                MaterialRepository.getMaterials()
+                    .then(e => this.materials = e)
             },
 
             editItem(item) {
@@ -162,18 +194,19 @@
                 this.dialog = true
             },
 
+            copyItem(item) {
+                this.editedIndex = -1
+                this.editedItem = Object.assign({}, item)
+                this.dialog = true
+            },
+
             deleteItem(item) {
                 const index = this.materials.indexOf(item)
                 const id = this.materials[index].id
                 confirm('Are you sure you want to delete this item?') &&
-                db.collection('materials').doc(id).delete()
-                    .then(() => {
-                        this.materials.splice(index, 1)
-                    })
-                    .catch(err => {
-                        console.log(err)
-                    })
-
+                MaterialRepository.deleteMaterial(this.materials[index].id)
+                    .then(() => this.materials.splice(index, 1))
+                    .catch(err => console.log(err))
 
             },
 
@@ -187,30 +220,33 @@
 
             save() {
                 if (this.editedIndex > -1) {
-                    db.collection('materials').doc(this.materials[this.editedIndex].id).update({
-                        name: this.editedItem.name,
-                        group: this.editedItem.group,
-                        type: this.editedItem.type,
-                        description: this.editedItem.description
-                    }).then(() => {
+
+                    MaterialRepository.updateMaterial(
+                        {
+                            id: this.materials[this.editedIndex].id,
+                            name: this.editedItem.name,
+                            group: this.editedItem.group,
+                            type: this.editedItem.type,
+                            units: this.editedItem.units,
+                            description: this.editedItem.description
+                        }).then(() => {
                         Object.assign(this.materials[this.editedIndex], this.editedItem)
-                        this.close()
-                    })
+
+                    }).catch(err => console.log(err))
+                    this.close()
                 } else {
-                    console.log
-                    db.collection('materials').add({
+                    MaterialRepository.addMaterial({
                         name: this.editedItem.name,
                         group: this.editedItem.group,
                         type: this.editedItem.type,
-                        description: this.editedItem.description,
-                    }).then((docRef) => {
-                        console.log(docRef.id)
-                        this.editedItem.id = docRef.id
+                        units: this.editedItem.units,
+                        description: this.editedItem.description
+                    }).then(id => {
+                        this.editedItem.id = id
                         this.materials.push(this.editedItem)
                         this.close()
-                    }).catch(err => {
-                        console.log(err)
                     })
+                        .catch(err => console.log(err))
                 }
 
             },

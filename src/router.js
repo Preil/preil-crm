@@ -6,6 +6,7 @@ import Products from './views/Products.vue'
 import Product from './views/Product.vue'
 import Specs from './views/Specs.vue'
 import Spec from './views/Spec.vue'
+import SpecEdit from './views/SpecEdit.vue'
 import Test from './views/Test.vue'
 
 Vue.use(Router)
@@ -44,6 +45,12 @@ export default new Router({
             name: 'Spec',
             component: Spec
         },
+        {
+            path: '/specEdit/:spec_id',
+            name: 'SpecEdit',
+            component: SpecEdit
+        },
+
         {
             path: '/test',
             name: 'Test',
