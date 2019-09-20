@@ -2,7 +2,7 @@
     <v-row>
         <v-col>
             <v-card class="mb-5">
-                <v-card-title class="grey lighten-1">
+                <v-card-title class="orange">
                     <span>Materials</span>
                 </v-card-title>
                 <v-card-text>
@@ -112,15 +112,17 @@
 </template>
 
 <script>
+    import db from '@/firebase/init'
     import MaterialRepository from '@/components/JS/repository/materialRepository'
+    import SpecRepository from '@/components/JS/repository/specRepository'
 
     export default {
         name: "materialsOfSpec",
         props: ['props'],
         data() {
             return {
-                dialog: false,
                 materials: [],
+                dialog: false,
                 editedIndex: -1,
                 editedItem: {
                     material: {
@@ -147,17 +149,19 @@
             }
         },
         created() {
-            this.initialize()
+            setTimeout(() => {
+                this.initialize()
+            }, 300)
         },
         methods: {
             initialize() {
-                this.materials = this.props.materials
+                if (this.props.materials) this.materials = this.props.materials
                 MaterialRepository.getMaterials()
                     .then(e => {
                         this.allMaterials = e
                         console.log(this.allMaterials)
-                    }).then(()=>{
-                        this.updateMaterialsUsage()
+                    }).then(() => {
+                    this.updateMaterialsUsage()
                 })
             },
             editItem(item) {
@@ -172,11 +176,9 @@
                 let newMaterials = this.materials.concat()
                 confirm('Are you sure you want to delete this item?') &&
                 newMaterials.splice(index, 1)
-                db.collection('test_specs').doc(this.props.spec.id).update({
-                    materials: newMaterials
-                })
+                SpecRepository.updateSpecMaterials(this.props.spec_id, newMaterials)
                     .then(() => {
-                        this.spec.materials = newMaterials
+                        this.materials = newMaterials
                         this.updateMaterialsUsage()
                     })
                     .catch(err => {
@@ -197,22 +199,22 @@
                 if (this.editedIndex > -1) {
                     let newMaterials = this.materials.concat()
                     newMaterials[this.editedIndex] = this.editedItem
-                    db.collection('test_specs').doc(this.spec.id).update({
-                        materials: newMaterials
-                    }).then(() => {
-                        Object.assign(this.spec.materials[this.editedIndex], this.editedItem)
-                        this.spec.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
+
+                    SpecRepository.updateSpecMaterials(this.props.spec_id, newMaterials)
+                        .then(() => {
+                        Object.assign(this.materials[this.editedIndex], this.editedItem)
+                        this.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
                         this.updateMaterialsUsage()
                         this.close()
                     })
                 } else {
-                    let newMaterials = this.spec.materials.concat()
+                    let newMaterials = []
+                    if (this.materials) newMaterials = this.materials.concat()
                     newMaterials.push(this.editedItem)
-                    db.collection('test_specs').doc(this.spec.id).update({
-                        materials: newMaterials
-                    }).then(() => {
-                        this.spec.materials.push(this.editedItem)
-                        this.spec.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
+                    SpecRepository.updateSpecMaterials(this.props.spec_id, newMaterials)
+                    .then(() => {
+                        this.materials.push(this.editedItem)
+                        this.materials.sort((a, b) => a.material.name.localeCompare(b.material.name))
                         this.updateMaterialsUsage()
                         this.close()
                     }).catch(err => {
@@ -224,7 +226,7 @@
             updateMaterialsUsage() {
                 this.unUsedMaterials.length = 0
                 this.usedMaterials.length = 0
-                this.materials.forEach(doc => {
+                if (this.materials) this.materials.forEach(doc => {
                     let material = {}
                     material.id = doc.material.id
                     material.name = doc.material.name

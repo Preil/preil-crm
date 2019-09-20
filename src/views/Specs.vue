@@ -1,5 +1,7 @@
 <template>
-    <SpecsList />
+    <v-container>
+        <SpecsList />
+    </v-container>
 </template>
 
 <script>

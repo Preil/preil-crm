@@ -8,6 +8,8 @@ import Specs from './views/Specs.vue'
 import Spec from './views/Spec.vue'
 import SpecEdit from './views/SpecEdit.vue'
 import Test from './views/Test.vue'
+import SignUp from './components/SignUp'
+import SignIn from './components/SignIn'
 
 Vue.use(Router)
 
@@ -19,6 +21,16 @@ export default new Router({
             path: '/',
             name: 'home',
             component: Home
+        },
+        {
+            path: '/signin',
+            name: 'SignIn',
+            component: SignIn
+        },
+        {
+            path: '/signup',
+            name: 'SignUp',
+            component: SignUp
         },
         {
             path: '/materials',

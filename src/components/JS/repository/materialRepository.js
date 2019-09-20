@@ -1,11 +1,11 @@
-import db from '@/firebase/init'
+import {db} from '@/firebase/init'
 import Spec from '@/components/JS/models/material'
 
 export default class MaterialRepository {
 
-    static async getMaterialById(spec_id) {
+    static async getMaterialById(id) {
         const materialsColRef = db.collection('materials')
-        const materialRef = await materialsColRef.doc(spec_id).get()
+        const materialRef = await materialsColRef.doc(id).get()
         let material = materialRef.data()
         material.id = materialRef.id
         return material

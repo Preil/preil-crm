@@ -1,10 +1,9 @@
 <template>
-    <!--todo: Use this component to edit specification, also use components: materialsOfSpec, productsOfSpec -->
     <v-container>
         <v-row row class="mb-5">
             <v-col>
                 <v-card>
-                    <v-card-title class="light-green white--text">
+                    <v-card-title class="light-blue white--text">
                         <h2> {{ spec.name }}</h2>
                     </v-card-title>
                     <v-card-text class="mt-3 pb-0 mb-0">
@@ -14,15 +13,19 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer></v-spacer>
+
+                        <span class=""
+                              style="cursor: pointer">
+                                <v-icon @click="edit">edit</v-icon>
+                            </span>
                         <v-dialog v-model="dialog2" max-width="600px">
-                            <template v-slot:activator="{ on }">
-                                <!--<v-btn color="primary" dark v-on="on">Open Dialog</v-btn>-->
-                                <span class="float-right pointer"
-                                      style="cursor: pointer"
-                                      v-on="on">
-                            <v-icon>edit</v-icon>
-                        </span>
-                            </template>
+                            <!--<template v-slot:activator="{ on }">-->
+                            <!--<span class="float-right pointer"-->
+                            <!--style="cursor: pointer"-->
+                            <!--v-on="on">-->
+                            <!--<v-icon>edit</v-icon>-->
+                            <!--</span>-->
+                            <!--</template>-->
                             <v-card>
                                 <v-card-title>
                                     <span class="headline">Edit specification</span>
@@ -32,12 +35,12 @@
                                         <v-row>
                                             <v-col cols="12" sm="12" md="12">
                                                 <v-text-field
-                                                        v-model="spec.name"
+                                                        v-model="editedItem.name"
                                                         label="Specification name*" required></v-text-field>
                                             </v-col>
                                             <v-col cols="12" sm="12" md="12">
                                                 <v-textarea
-                                                        v-model="spec.description"
+                                                        v-model="editedItem.description"
                                                         label="Description"
                                                         hint="type some description here"></v-textarea>
 
@@ -45,7 +48,7 @@
 
                                             <v-col cols="12" sm="12">
                                                 <v-select
-                                                        v-model="spec.status"
+                                                        v-model="editedItem.status"
                                                         :items="['default', '-']"
                                                         label="Status"
                                                         required
@@ -58,7 +61,7 @@
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
                                     <v-btn color="blue darken-1" text @click="dialog2 = false">Close</v-btn>
-                                    <v-btn color="blue darken-1" text @click="dialog2 = false">Save</v-btn>
+                                    <v-btn color="blue darken-1" text @click="save">Save</v-btn>
                                 </v-card-actions>
                             </v-card>
                         </v-dialog>
@@ -66,7 +69,7 @@
                 </v-card>
             </v-col>
         </v-row>
-        <!--<products-of-spec :props="productsProps"/>-->
+        <products-of-spec :props="productsProps"/>
         <materials-of-spec :props="materialsProps"/>
     </v-container>
 
@@ -75,13 +78,13 @@
 <script>
     import MaterialsOfSpec from '@/components/specs/specEdit/MaterialsOfSpec'
     import ProductsOfSpec from '@/components/specs/specEdit/ProductsOfSpec'
-    import SpecRepository from "../components/JS/repository/specRepository";
+    import SpecRepository from '@/components/JS/repository/specRepository'
 
     export default {
         name: "SpecEdit",
         components: {
             MaterialsOfSpec,
-            // ProductsOfSpec
+            ProductsOfSpec
         },
         data() {
             return {
@@ -93,12 +96,7 @@
                     product: {
                         name: 'Product'
                     },
-                    materials: [
-                        {material: {id: '111', name: 'testMaterial1', units: 'kg'}, quantity: 1},
-                        {material: {id: '222', name: 'testMaterial2', units: 'kg'}, quantity: 2},
-                        {material: {id: '333', name: 'testMaterial3', units: 'kg'}, quantity: 3},
 
-                    ]
 
                 },
                 materialsProps: {
@@ -109,6 +107,17 @@
                     spec_id: '',
                     products: []
                 },
+
+                editedItem: {
+                    name: '',
+                    type: '',
+                    description: ''
+                },
+                defaultItem: {
+                    name: '',
+                    type: '',
+                    description: ''
+                }
             }
         },
 
@@ -117,19 +126,60 @@
         },
         methods: {
             initialize(spec_id) {
-                SpecRepository.getSpecById(spec_id).
-                then(e => {
+                SpecRepository.getSpecById(spec_id).then(e => {
                     this.spec = e
                     console.log(this.spec)
                     this.materialsProps.spec_id = spec_id
                     this.materialsProps.materials = this.spec.materials
-                    console.log('props')
-                    console.log(this.materialsProps)
+                    console.log('product Props:')
+                    console.log(this.productsProps)
                     this.productsProps.spec_id = spec_id
                     this.productsProps.products = this.spec.products
                 })
+            },
+            edit() {
+
+                this.editedItem = Object.assign({}, this.spec)
+                this.dialog2 = true
+            },
+
+            deleteItem(item) {
+                const index = this.products.indexOf(item)
+                const id = this.products[index].id
+                confirm('Are you sure you want to delete this item?') &&
+                ProductRepository.delete(id)
+                    .then(() => {
+                        this.products.splice(index, 1)
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    })
+
+
+            },
+
+            close() {
+                this.dialog2 = false
+                setTimeout(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem)
+                }, 300)
+            },
+
+            save() {
+                SpecRepository.update({
+                    id: this.spec.id,
+                    name: this.editedItem.name,
+                    description: this.editedItem.description,
+                }).then(() => {
+                    this.spec = this.editedItem
+                    this.close()
+                }).catch(err => {
+                    console.log(err)
+                })
             }
+
         }
+
     }
 </script>
 

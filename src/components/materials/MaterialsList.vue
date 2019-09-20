@@ -1,125 +1,132 @@
 <template>
     <v-container>
+        <v-card>
+            <v-card-title class="orange white--text">
+                Materials
+            </v-card-title>
+            <v-card-text>
+                <v-data-table
+                        :headers="headers"
+                        :items="materials"
+                        :search="search"
+                        sort-by="group"
 
-        <v-data-table
-                :headers="headers"
-                :items="materials"
-                :search="search"
-                sort-by="group"
-                class="elevation-1"
-        >
-            <template v-slot:top>
-                <v-toolbar flat color="white">
-                    <v-toolbar-title>Materials</v-toolbar-title>
-                    <v-divider
-                            class="mx-4"
-                            inset
-                            vertical
-                    ></v-divider>
-                    <v-text-field
-                            v-model="search"
-                            append-icon="search"
-                            label="Search"
-                            single-line
-                            hide-details
-                    ></v-text-field>
-                    <v-spacer></v-spacer>
-                    <v-dialog v-model="dialog" max-width="800px">
-                        <template v-slot:activator="{ on }">
-                            <v-btn color="primary" dark class="mb-2" v-on="on">New Item</v-btn>
-                        </template>
-                        <v-card>
-                            <v-card-title>
-                                <span class="headline">{{ formTitle }}</span>
-                            </v-card-title>
+                >
+                    <template v-slot:top>
+                        <v-toolbar class="mt-3" flat color="white">
+                            <v-toolbar-title>Materials</v-toolbar-title>
+                            <v-divider
+                                    class="mx-4"
+                                    inset
+                                    vertical
+                            ></v-divider>
+                            <v-text-field
+                                    v-model="search"
+                                    append-icon="search"
+                                    label="Search"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
+                            <v-spacer></v-spacer>
+                            <v-dialog v-model="dialog" max-width="800px">
+                                <template v-slot:activator="{ on }">
+                                    <v-btn color="orange" dark class="mb-2" v-on="on">New Item</v-btn>
+                                </template>
+                                <v-card>
+                                    <v-card-title>
+                                        <span class="headline">{{ formTitle }}</span>
+                                    </v-card-title>
 
-                            <v-card-text>
-                                <v-container grid-list-md>
-                                    <v-layout wrap>
-                                        <v-flex xs12 sm12 md12>
-                                            <v-text-field v-model="editedItem.name"
-                                                          label="Material name"></v-text-field>
-                                        </v-flex>
-
-
-                                        <v-flex xs12 sm6 md6>
-                                            <v-text-field v-model="editedItem.group" label="Group"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12 sm6 md6>
-                                            <v-text-field v-model="editedItem.type" label="Type"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12 sm6 md6>
-                                            <v-text-field v-model="editedItem.units" label="Units"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12 sm12 md12>
-                                            <v-text-field v-model="editedItem.description"
-                                                          label="Description"></v-text-field>
-                                        </v-flex>
-                                    </v-layout>
+                                    <v-card-text>
+                                        <v-container grid-list-md>
+                                            <v-layout wrap>
+                                                <v-flex xs12 sm12 md12>
+                                                    <v-text-field v-model="editedItem.name"
+                                                                  label="Material name"></v-text-field>
+                                                </v-flex>
 
 
-                                </v-container>
-                            </v-card-text>
+                                                <v-flex xs12 sm6 md6>
+                                                    <v-text-field v-model="editedItem.group" label="Group"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs12 sm6 md6>
+                                                    <v-text-field v-model="editedItem.type" label="Type"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs12 sm6 md6>
+                                                    <v-text-field v-model="editedItem.units" label="Units"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs12 sm12 md12>
+                                                    <v-text-field v-model="editedItem.description"
+                                                                  label="Description"></v-text-field>
+                                                </v-flex>
+                                            </v-layout>
 
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-                                <v-btn color="blue darken-1" text @click="save" @keydown.enter="save">Save</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
-                </v-toolbar>
-            </template>
-            <template v-slot:item.action="{ item }">
-                <v-layout>
-                    <v-flex>
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-icon
-                                        small
-                                        class="mr-2"
-                                        @click="copyItem(item)"
-                                        v-on="on">
-                                    mdi-content-copy
-                                </v-icon>
-                            </template>
-                            <span>copy</span>
-                        </v-tooltip>
-                    </v-flex>
-                    <v-flex>
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-icon
-                                        small
-                                        class="mr-2"
-                                        @click="editItem(item)"
-                                        v-on="on">
-                                    edit
-                                </v-icon>
-                            </template>
-                            <span>edit</span>
-                        </v-tooltip>
-                    </v-flex>
-                    <v-flex>
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-icon
-                                        small
-                                        class="mr-2"
-                                        @click="deleteItem(item)"
-                                        v-on="on">
-                                    delete
-                                </v-icon>
-                            </template>
-                            <span>delete</span>
-                        </v-tooltip>
-                    </v-flex>
-                </v-layout>
-            </template>
-            <template v-slot:no-data>
-                <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
-        </v-data-table>
+
+                                        </v-container>
+                                    </v-card-text>
+
+                                    <v-card-actions>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+                                        <v-btn color="blue darken-1" text @click="save" @keydown.enter="save">Save</v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-dialog>
+                        </v-toolbar>
+                    </template>
+                    <template v-slot:item.action="{ item }">
+                        <v-layout>
+                            <v-flex>
+                                <v-tooltip top>
+                                    <template v-slot:activator="{ on }">
+                                        <v-icon
+                                                small
+                                                class="mr-2"
+                                                @click="copyItem(item)"
+                                                v-on="on">
+                                            mdi-content-copy
+                                        </v-icon>
+                                    </template>
+                                    <span>copy</span>
+                                </v-tooltip>
+                            </v-flex>
+                            <v-flex>
+                                <v-tooltip top>
+                                    <template v-slot:activator="{ on }">
+                                        <v-icon
+                                                small
+                                                class="mr-2"
+                                                @click="editItem(item)"
+                                                v-on="on">
+                                            edit
+                                        </v-icon>
+                                    </template>
+                                    <span>edit</span>
+                                </v-tooltip>
+                            </v-flex>
+                            <v-flex>
+                                <v-tooltip top>
+                                    <template v-slot:activator="{ on }">
+                                        <v-icon
+                                                small
+                                                class="mr-2"
+                                                @click="deleteItem(item)"
+                                                v-on="on">
+                                            delete
+                                        </v-icon>
+                                    </template>
+                                    <span>delete</span>
+                                </v-tooltip>
+                            </v-flex>
+                        </v-layout>
+                    </template>
+                    <template v-slot:no-data>
+                        <v-btn color="primary" @click="initialize">Reset</v-btn>
+                    </template>
+                </v-data-table>
+            </v-card-text>
+        </v-card>
+
 
 
     </v-container>

@@ -17,37 +17,17 @@
 
         <v-layout row>
             <v-flex>
-                <v-card>
-                    <v-card-title>
-                        <span>Specifications</span>
-                    </v-card-title>
-                    <v-card-text>
-                        <v-simple-table>
-                            <thead>
-                            <tr>
-                                <th class="text-left">Name</th>
-                                <th class="text-left">Status</th>
-                                <th class="text-left">Description</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in specs" :key="item.name">
-                                <td>{{ item.name }}</td>
-                                <td>{{ item.status }}</td>
-                                <td>{{ item.description }}</td>
-                            </tr>
-                            </tbody>
-                        </v-simple-table>
-                    </v-card-text>
-                </v-card>
+                <spec-list :product_id="$route.params.product_id" />
             </v-flex>
         </v-layout>
+
 
     </v-container>
 </template>
 
 <script>
     import db from '@/firebase/init'
+    import SpecList from '@/components/specs/SpecsList'
 
     export default {
         name: "Product",
@@ -73,6 +53,9 @@
 
                 ]
             }
+        },
+        components: {
+          SpecList
         },
         methods: {
             initialize(product_id) {
