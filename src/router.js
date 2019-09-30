@@ -10,6 +10,9 @@ import SpecEdit from './views/SpecEdit.vue'
 import Test from './views/Test.vue'
 import SignUp from './components/SignUp'
 import SignIn from './components/SignIn'
+import PriceList from './components/pricelists/PriceList'
+import PriceListEdit from './components/pricelists/PriceListEdit'
+import PriceLists from './components/pricelists/PriceLists'
 
 Vue.use(Router)
 
@@ -67,6 +70,21 @@ export default new Router({
             path: '/test',
             name: 'Test',
             component: Test
+        },
+        {
+            path: '/pricelists',
+            name: 'PriceLists',
+            component: PriceLists
+        },
+        {
+            path: '/pricelists/:pricelist_id',
+            name: 'PriceList',
+            component: PriceList
+        },
+        {
+            path: '/pricelistedit/:pricelist_id',
+            name: 'PriceListEdit',
+            component: PriceListEdit
         },
         {
             path: '/about',
